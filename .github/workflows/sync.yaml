@@ -38,14 +38,16 @@ jobs:
             IMAGE_NAME=$(echo $IMAGE | cut -d ':' -f 1)
             IMAGE_NAME=$(echo $IMAGE_NAME | rev | cut -d '/' -f 1 | rev)
             IMAGE_TAG=$(echo $IMAGE | cut -d ':' -f 2)
-            
-            # 拉取镜像
-            docker pull $IMAGE
-
+            # https://github.com/lework/skopeo-binary/releases/download/v1.18.0/skopeo-linux-amd64
+            wget -O /usr/local/bin/skopeo https://github.com/lework/skopeo-binary/releases/download/v1.18.0/skopeo-linux-amd64
+            chmod +x /usr/local/bin/skopeo
             # 推送镜像到新的仓库
             TARGET_IMAGE=${{ secrets.ALIYUN_REGISTRY_URL }}/gh-sync/${IMAGE_NAME}:${IMAGE_TAG}
-            docker tag $IMAGE $TARGET_IMAGE
-            docker push $TARGET_IMAGE
+            skopeo copy docker://$IMAGE docker://$TARGET_IMAGE
+            # 拉取镜像
+            # docker pull $IMAGE
+            # docker tag $IMAGE $TARGET_IMAGE
+            # docker push $TARGET_IMAGE
             echo "Pushed image: $TARGET_IMAGE"
           done
 
